@@ -1,0 +1,7 @@
+CSAM	C SAM
+CSAM	See Sam
+ECIF	E sith
+ECIF	E cif
+CAF	CAF
+CAF	KAF
+WAF	W A F
