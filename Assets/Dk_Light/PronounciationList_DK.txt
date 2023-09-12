@@ -1,8 +1,11 @@
 CSAM	C SAM
 CSAM	Sesam
+CSAM	Se Sammen
 ECIF	Esif
 ECIF	Ecif
 CAF	CAF
 CAF	KAF
 WAF	W A F
 WAF	VAF
+VBD	V B D
+VBD'erne	V B D erne

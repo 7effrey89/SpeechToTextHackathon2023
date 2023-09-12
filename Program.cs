@@ -15,7 +15,7 @@ namespace SpeechToText
 
         static string customEndpoint_En_Light = "4fd1dac9-b594-483e-ab6f-e0d3c0c71a75";
 
-        static string customEndpoint_Dk_Light = "30b18489-b8e3-44ad-8168-0fee6f380a11";
+        static string customEndpoint_Dk_Light = "eb0d964b-d172-4d69-911c-53ab56f95766";
         
         static string customEndpoint_In_Full = "a48f54f4-05b5-4fe9-8fb7-66c40bdfb564";
         static string customEndpoint_Dk_Full = "30b18489-b8e3-44ad-8168-0fee6f380a11";
@@ -40,7 +40,8 @@ namespace SpeechToText
         /*
         * https://learn.microsoft.com/en-us/azure/ai-services/speech-service/language-identification?tabs=once&pivots=programming-language-csharp
         */
-        static public bool useAutoLanguageDetection = false; //not in scope
+        static public bool useAutoLanguageDetection = true; //not in scope
+
 
         static public bool usePredefinedAUdioFile = false;
         static public bool useTranslation = true;
@@ -63,41 +64,62 @@ namespace SpeechToText
             //source: https://learn.microsoft.com/en-us/azure/ai-services/speech-service/how-to-recognize-speech?pivots=programming-language-csharp#change-how-silence-is-handled
 
             //Language: https://learn.microsoft.com/en-us/azure/ai-services/speech-service/language-support?tabs=stt
-            speechConfig.SpeechRecognitionLanguage = "en-US";
+            //speechConfig.SpeechRecognitionLanguage = "en-US";
             //speechConfig.SpeechRecognitionLanguage = "ml-IN";
             //speechConfig.SpeechRecognitionLanguage = "da-DK";
             //speechConfig.SpeechRecognitionLanguage = "ru-RU";
 
-
-            var autoDetectSourceLanguageConfig =
-            AutoDetectSourceLanguageConfig.FromLanguages(
-                new string[] { "en-US", "ml-IN", "ru-RU", "da-DK" });
-
             speechConfig.SetProperty(PropertyId.Speech_SegmentationSilenceTimeoutMs, "500"); //500 ms default
 
-            /**/
+            //init auto detect language
+            AutoDetectSourceLanguageConfig autoDetectSourceLanguageConfig = AutoDetectSourceLanguageConfig.FromLanguages(new string[] { "en-US"});
+
+
             if (useCustomEndpoint)
             {
-   
-                switch (speechConfig.SpeechRecognitionLanguage)
+                
+                if (useAutoLanguageDetection)
                 {
-                    case "en-US":
-                        speechConfig.EndpointId = customEndpoint_En_Light;
-                        break;
-                    case "da-DK":
-                        speechConfig.EndpointId = customEndpoint_Dk_Full; //change to danish endpoint
+                    Console.WriteLine("The first sentence will determine which language to use.");
+                    //When using auto detect language, you need to specify which endpoint to use for each language as each endpoint support only 1 specific language
+                    var sourceLanguageConfigs = new SourceLanguageConfig[]
+                    {
+                        SourceLanguageConfig.FromLanguage("en-US", customEndpoint_En_Light),
+                        SourceLanguageConfig.FromLanguage("da-DK", customEndpoint_Dk_Full),
+                        SourceLanguageConfig.FromLanguage("ml-IN", customEndpoint_In_Full)
+                    };
+                    autoDetectSourceLanguageConfig =
+                        AutoDetectSourceLanguageConfig.FromSourceLanguageConfigs(
+                            sourceLanguageConfigs);
 
-                        Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo(speechConfig.SpeechRecognitionLanguage);
-                        break;
-                    case "ml-IN":
-                        speechConfig.EndpointId = customEndpoint_In_Full; //change to danish endpoint
-                        Thread.CurrentThread.CurrentUICulture =CultureInfo.GetCultureInfo(speechConfig.SpeechRecognitionLanguage);
-                        break;
-                    default:
-                        speechConfig.EndpointId = null;
-                        break;
+                } else
+                {
+                    //Hard coding which custom endpoint to use based on language
+                    switch (speechConfig.SpeechRecognitionLanguage)
+                    {
+                        case "en-US":
+                            speechConfig.EndpointId = customEndpoint_En_Light;
+                            break;
+                        case "da-DK":
+                            speechConfig.EndpointId = customEndpoint_Dk_Full; //change to danish endpoint
+
+                            Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo(speechConfig.SpeechRecognitionLanguage);
+                            break;
+                        case "ml-IN":
+                            speechConfig.EndpointId = customEndpoint_In_Full; //change to danish endpoint
+                            Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo(speechConfig.SpeechRecognitionLanguage);
+                            break;
+                        default:
+                            speechConfig.EndpointId = null;
+                            break;
+                    }
                 }
-
+            } else
+            {
+                //when not using custom endpoint, auto selection can be deone like this:
+                autoDetectSourceLanguageConfig =
+                AutoDetectSourceLanguageConfig.FromLanguages(
+                    new string[] { "en-US", "ml-IN", "ru-RU", "da-DK" });
             }
 
             var stopRecognition = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -113,14 +135,16 @@ namespace SpeechToText
             // Create an audio stream from a wav file or from the default microphone
             using (var audioConfig = myVariableAudioConfig)
             {
+                //default use speechConfig for language selection
                 SpeechRecognizer myVariableRecognizer = new SpeechRecognizer(speechConfig, audioConfig);
 
                 List<string> transcriptedLines = new List<string>();
 
+                //option to auto select language 
                 if (useAutoLanguageDetection)
                 {
                     //auto detect language
-                    myVariableRecognizer = new SpeechRecognizer(speechConfig, autoDetectSourceLanguageConfig, audioConfig); //fails here for custom endpoint
+                    myVariableRecognizer = new SpeechRecognizer(speechConfig, autoDetectSourceLanguageConfig, audioConfig); 
                 }
                 // Create a conversation transcriber using audio stream input
                 using (var conversationTranscriber = myVariableRecognizer)
@@ -137,14 +161,18 @@ namespace SpeechToText
 
                     conversationTranscriber.Recognizing += (s, e) =>
                     {
-                        Console.WriteLine($"TRANSCRIBING: Text={e.Result.Text}");
+                        //Console.WriteLine($"TRANSCRIBING: Text={e.Result.Text}");
                     };
 
                     conversationTranscriber.Recognized += (s, e) =>
                     {
                         if (e.Result.Reason == ResultReason.RecognizedSpeech)
                         {
-                            string outcomeText= $"RECOGNIZED: Text={e.Result.Text}";
+                            var autoDetectSourceLanguageResult =
+                            AutoDetectSourceLanguageResult.FromResult(e.Result);
+                            string detectedLanguage = autoDetectSourceLanguageResult.Language;
+
+                            string outcomeText= $"RECOGNIZED Language: {detectedLanguage}: Text={e.Result.Text}";
                             Console.WriteLine(outcomeText);
                             transcriptedLines.Add(outcomeText);
                         }
@@ -182,13 +210,13 @@ namespace SpeechToText
 
                     Console.ReadKey();
                     //Related to auto language detection
-                    //if (useAutoLanguageDetection)
-                    //{
-                    //    var speechRecognitionResult = await conversationTranscriber.RecognizeOnceAsync();
-                    //    var autoDetectSourceLanguageResult =
-                    //        AutoDetectSourceLanguageResult.FromResult(speechRecognitionResult);
-                    //    var detectedLanguage = autoDetectSourceLanguageResult.Language;
-                    //}
+                    if (useAutoLanguageDetection)
+                    {
+                        var speechRecognitionResult = await conversationTranscriber.RecognizeOnceAsync();
+                        var autoDetectSourceLanguageResult =
+                            AutoDetectSourceLanguageResult.FromResult(speechRecognitionResult);
+                        var detectedLanguage = autoDetectSourceLanguageResult.Language;
+                    }
 
                     // Waits for completion. Use Task.WaitAny to keep the task rooted.
                     //Task.WaitAny(new[] { stopRecognition.Task });
