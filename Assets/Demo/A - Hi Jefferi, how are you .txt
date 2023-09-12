@@ -1,0 +1,40 @@
+A - Hi Jefferi, how are you ?
+
+ 
+J - I am good, Thanks. How are you Ansar?
+Jeg har det godt, tak, Hvad med dig?
+ 
+
+A - I am doing good. We have a happy news for you and your company MS.
+
+ 
+
+J - Nice.
+Dejligt at høre
+
+ 
+
+A - My company Contoso, finally decided to migrate on prem worklaods to Azure. We got final approval from the organaization.
+
+ 
+
+J - Oh.. That’s good news. How can we help here you in this?
+Det er godt at høre, er der noget vi kan hjælpe med?
+ 
+
+A - We are looking for the best practices, recommendation and of course some discounts from the Mirosot.
+
+ 
+
+J - Of Course. We can help on that. We have team TS who can help on the best practices and landing zones. Our CSA can help on the VBDs for the implementations.
+Selvfølgelig, Det er noget vi kan hjælpe med. Vi har et team som kan hjælpe med best practices og landing zones. Vores CSA'er kan tilbyde at holde nogle workshops i form af VBD'er. 
+ 
+
+A - That’s nice, what about the discusounts ? That’s very important.
+
+ 
+
+J - I will connect with CSAM to get the ECIF for this migration program.
+Jeg vil sætte dig i forbindelse med jeres CSAM og se om vi kan skaffe jer noget Ecif for dette migrærings projekt.
+
+Vi ses
