@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Globalization;
+using System.Threading.Tasks;
 using Microsoft.CognitiveServices.Speech;
 using Microsoft.CognitiveServices.Speech.Audio;
 using Microsoft.CognitiveServices.Speech.Transcription;
@@ -56,17 +57,16 @@ namespace SpeechToText
 
         async static Task SpeechRegClass(SpeechTranslationConfig speechConfig)
         {
-            Console.WriteLine("Say something... not working with language");
+            Console.WriteLine("Say something... press any key to stop");
 
             //source: https://learn.microsoft.com/en-us/azure/ai-services/speech-service/get-started-stt-diarization?tabs=windows&pivots=programming-language-csharp
             //source: https://learn.microsoft.com/en-us/azure/ai-services/speech-service/how-to-recognize-speech?pivots=programming-language-csharp#change-how-silence-is-handled
 
             //Language: https://learn.microsoft.com/en-us/azure/ai-services/speech-service/language-support?tabs=stt
-            //speechConfig.SpeechRecognitionLanguage = "en-US";
-            speechConfig.SpeechRecognitionLanguage = "ml-IN";
+            speechConfig.SpeechRecognitionLanguage = "en-US";
+            //speechConfig.SpeechRecognitionLanguage = "ml-IN";
             //speechConfig.SpeechRecognitionLanguage = "da-DK";
             //speechConfig.SpeechRecognitionLanguage = "ru-RU";
-            //speechConfig.SpeechRecognitionLanguage = "es-ES";
 
 
             var autoDetectSourceLanguageConfig =
@@ -86,9 +86,12 @@ namespace SpeechToText
                         break;
                     case "da-DK":
                         speechConfig.EndpointId = customEndpoint_Dk_Full; //change to danish endpoint
+
+                        Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo(speechConfig.SpeechRecognitionLanguage);
                         break;
                     case "ml-IN":
                         speechConfig.EndpointId = customEndpoint_In_Full; //change to danish endpoint
+                        Thread.CurrentThread.CurrentUICulture =CultureInfo.GetCultureInfo(speechConfig.SpeechRecognitionLanguage);
                         break;
                     default:
                         speechConfig.EndpointId = null;
@@ -111,6 +114,8 @@ namespace SpeechToText
             using (var audioConfig = myVariableAudioConfig)
             {
                 SpeechRecognizer myVariableRecognizer = new SpeechRecognizer(speechConfig, audioConfig);
+
+                List<string> transcriptedLines = new List<string>();
 
                 if (useAutoLanguageDetection)
                 {
@@ -137,10 +142,11 @@ namespace SpeechToText
 
                     conversationTranscriber.Recognized += (s, e) =>
                     {
-                        if (e.Result.Reason == ResultReason.TranslatedSpeech)
+                        if (e.Result.Reason == ResultReason.RecognizedSpeech)
                         {
-                            Console.WriteLine($"TRANSCRIBED: Text={e.Result.Text}");
-
+                            string outcomeText= $"RECOGNIZED: Text={e.Result.Text}";
+                            Console.WriteLine(outcomeText);
+                            transcriptedLines.Add(outcomeText);
                         }
                         else if (e.Result.Reason == ResultReason.NoMatch)
                         {
@@ -167,11 +173,14 @@ namespace SpeechToText
                     {
                         Console.WriteLine("\n    Session stopped event.");
                         stopRecognition.TrySetResult(0);
+
+                        writeToFile(transcriptedLines);
                     };
 
 
                     await myVariableRecognizer.StartContinuousRecognitionAsync();
 
+                    Console.ReadKey();
                     //Related to auto language detection
                     //if (useAutoLanguageDetection)
                     //{
@@ -182,10 +191,12 @@ namespace SpeechToText
                     //}
 
                     // Waits for completion. Use Task.WaitAny to keep the task rooted.
-                    Task.WaitAny(new[] { stopRecognition.Task });
+                    //Task.WaitAny(new[] { stopRecognition.Task });
 
                     //await conversationTranscriber.StopContinuousRecognitionAsync();
                     await myVariableRecognizer.StopContinuousRecognitionAsync();
+
+                    
                 }
             }
 
@@ -326,17 +337,15 @@ namespace SpeechToText
             }
 
         }
-        private static void writeToFile()
+        private static void writeToFile(List<string> stringCollections)
         {
-            // Get the directories currently on the C drive.
-            DirectoryInfo[] cDirs = new DirectoryInfo(@"c:\temp\").GetDirectories();
+            string path = @"C:\temp\output.txt";
 
-            // Write each directory name to a file.
-            using (StreamWriter sw = new StreamWriter("transcript.txt"))
+            using (StreamWriter writer = new StreamWriter(path))
             {
-                foreach (DirectoryInfo dir in cDirs)
+                foreach (string line in stringCollections)
                 {
-                    sw.WriteLine(dir.Name);
+                    writer.WriteLine(line);
                 }
             }
         }
