@@ -16,7 +16,7 @@ namespace SpeechToText
 
         static string customEndpoint_Dk_Light = "30b18489-b8e3-44ad-8168-0fee6f380a11";
         
-        static string customEndpoint_In_Full = "30b18489-b8e3-44ad-8168-0fee6f380a11";
+        static string customEndpoint_In_Full = "a48f54f4-05b5-4fe9-8fb7-66c40bdfb564";
         static string customEndpoint_Dk_Full = "30b18489-b8e3-44ad-8168-0fee6f380a11";
 
         /*
@@ -63,8 +63,8 @@ namespace SpeechToText
 
             //Language: https://learn.microsoft.com/en-us/azure/ai-services/speech-service/language-support?tabs=stt
             //speechConfig.SpeechRecognitionLanguage = "en-US";
-            //speechConfig.SpeechRecognitionLanguage = "ml-IN";
-            speechConfig.SpeechRecognitionLanguage = "da-DK";
+            speechConfig.SpeechRecognitionLanguage = "ml-IN";
+            //speechConfig.SpeechRecognitionLanguage = "da-DK";
             //speechConfig.SpeechRecognitionLanguage = "ru-RU";
             //speechConfig.SpeechRecognitionLanguage = "es-ES";
 
@@ -139,7 +139,7 @@ namespace SpeechToText
                     {
                         if (e.Result.Reason == ResultReason.TranslatedSpeech)
                         {
-                            Console.WriteLine($"TRANSCRIBING: Text={e.Result.Text}");
+                            Console.WriteLine($"TRANSCRIBED: Text={e.Result.Text}");
 
                         }
                         else if (e.Result.Reason == ResultReason.NoMatch)
@@ -326,6 +326,20 @@ namespace SpeechToText
             }
 
         }
+        private static void writeToFile()
+        {
+            // Get the directories currently on the C drive.
+            DirectoryInfo[] cDirs = new DirectoryInfo(@"c:\temp\").GetDirectories();
 
+            // Write each directory name to a file.
+            using (StreamWriter sw = new StreamWriter("transcript.txt"))
+            {
+                foreach (DirectoryInfo dir in cDirs)
+                {
+                    sw.WriteLine(dir.Name);
+                }
+            }
+        }
     }
+
 }
