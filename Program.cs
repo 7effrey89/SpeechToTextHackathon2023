@@ -13,10 +13,9 @@ namespace SpeechToText
         static string speechKey = "9f76706cb0b74dfeb7b120508bd71966";
         static string speechRegion = "swedencentral";
 
+        //Custom speech endpoint
         static string customEndpoint_En_Light = "4fd1dac9-b594-483e-ab6f-e0d3c0c71a75";
-
         static string customEndpoint_Dk_Light = "eb0d964b-d172-4d69-911c-53ab56f95766";
-        
         static string customEndpoint_In_Full = "a48f54f4-05b5-4fe9-8fb7-66c40bdfb564";
         static string customEndpoint_Dk_Full = "30b18489-b8e3-44ad-8168-0fee6f380a11";
 

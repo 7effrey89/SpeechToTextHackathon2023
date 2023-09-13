@@ -1,0 +1,1 @@
+transcript cannot contain the specifc char: å. the text normalization will fail once uploaded to speech studio as an 'audi / transcript' asset
